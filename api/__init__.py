@@ -6,13 +6,14 @@ import os
 from flask import Flask, Blueprint, request
 from flask_caching import Cache
 
-
 app = Flask(__name__)
 logger = logging.getLogger(__name__)
 
 v1_bp = Blueprint('v1', __name__, url_prefix='/api/v1')
 # Blueprint直接复制app配置项
 v1_bp.config = app.config.copy()
+
+
 # 缓存逻辑
 cache_dir = './flask_cache'
 try:
@@ -33,6 +34,7 @@ def make_cache_key(*args, **kwargs):
     args = str(hash(frozenset(request.args.items())))
     return path + args
 
+
 def get_base_path():
     """
     获取程序运行路径
@@ -44,6 +46,6 @@ def get_base_path():
         return os.getcwd()
 
 
-src_path = os.path.join(get_base_path(), 'src')     # 静态资源路径
+src_path = os.path.join(get_base_path(), 'src')  # 静态资源路径
 
 __all__ = ['app', 'v1_bp', 'cache', 'make_cache_key', 'logger', 'src_path']

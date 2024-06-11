@@ -4,20 +4,25 @@ import sys
 import codecs
 import os
 
+from mod.args import GlobalArgs
+
 sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
 
 PLATFORM = platform.system()
 ARCHITECTURE = platform.machine()
+# 针对i386架构，由于AMD64架构的宿主机下，i386容器不会通过QEMU全虚拟化，因此会错误地获取到amd64架构
+# 此修正仅适用于宿主机为AMD64架构的情况
+print(platform.architecture()[0])
+if (ARCHITECTURE == "x86_64") & (platform.architecture()[0] == "32bit"):
+    ARCHITECTURE = "i386"
 APP_NAME = "lrcapi"
-APP_VERSION = "1.5.2"
+APP_VERSION = GlobalArgs().version
 PACK_NAME = f"{APP_NAME}-{APP_VERSION}-{PLATFORM}-{ARCHITECTURE}{'.exe' if PLATFORM == 'Windows' else ''}"
 
-# 针对Alpine，安装objdump/gcc环境等
-subprocess.run("apk add --no-cache gcc musl-dev jpeg-dev zlib-dev libjpeg", shell=True)
-subprocess.run("apk add binutils", shell=True)
 # 安装Pyinstaller及主程序依赖
 subprocess.run("pip install -r requirements.txt", shell=True)
 subprocess.run("pip install pyinstaller", shell=True)
+
 
 # 打包
 def generate_add_data_options(root_dir):
